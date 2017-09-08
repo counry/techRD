@@ -8,7 +8,7 @@ MY_CXX_OPT_FLAGS=-ffast-math -funroll-loops -D__extern_always_inline="extern __a
 
 
 CXX_FLAGS=$(MY_CXX_FLAGS) $(MY_CXX_OPT_FLAGS) -I$(INC_DIR) -L$(LIB_DIR)
-CCLIB=-lsdsl -ldivsufsort -ldivsufsort64 -lmarisa -Wl,-rpath=../lib
+CCLIB=-lsdsl -ldivsufsort -ldivsufsort64 -lmarisa -Wl,-rpath=../../lib
 SOURCES=$(wildcard *.cpp)
 EXECS=$(SOURCES:.cpp=.x)
 
