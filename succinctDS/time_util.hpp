@@ -1,9 +1,4 @@
-//
-//  testUtil.hpp
-//
-//  Created by liuzhenyuan03 on 2017/7/25.
-//  Copyright © 2017年 liuzhenyuan03. All rights reserved.
-//
+
 
 #ifndef testUtil_hpp
 #define testUtil_hpp
