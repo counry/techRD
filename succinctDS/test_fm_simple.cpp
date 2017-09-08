@@ -57,36 +57,38 @@ int main(int argc, char** argv)
     }
     cout << "Index construction complete, index requires " << size_in_mega_bytes(fm_index) << " MiB. size:" << fm_index.size() << endl;
 
-    std::cout << get_string(0, 0) << std::endl;
-    std::cout << get_string(0, fm_index.size()-10) << std::endl;
-    std::cout << get_string(0, fm_index.size()) << std::endl;
-    std::cout << get_string(0, fm_index.size()+10) << std::endl;
+    int index = 0;
+    std::cout << index++ << get_string(0, 0) << std::endl;
+    std::cout << index++ << get_string(0, fm_index.size()-10) << std::endl;
+    std::cout << index++ << get_string(0, fm_index.size()) << std::endl;
+    std::cout << index++ << get_string(0, fm_index.size()+10) << std::endl;
 
-    std::cout << get_string(fm_index.size()-10, 0) << std::endl;
-    std::cout << get_string(fm_index.size()-10, fm_index.size()-10) << std::endl;
-    std::cout << get_string(fm_index.size()-10, fm_index.size()) << std::endl;
-    std::cout << get_string(fm_index.size()-10, fm_index.size()+10) << std::endl;
+    std::cout << index++ << get_string(fm_index.size()-10, 0) << std::endl;
+    std::cout << index++ << get_string(fm_index.size()-10, fm_index.size()-10) << std::endl;
+    std::cout << index++ << get_string(fm_index.size()-10, fm_index.size()) << std::endl;
+    std::cout << index++ << get_string(fm_index.size()-10, fm_index.size()+10) << std::endl;
 
-    std::cout << get_string(fm_index.size(), 0) << std::endl;
-    std::cout << get_string(fm_index.size(), fm_index.size()-10) << std::endl;
-    std::cout << get_string(fm_index.size(), fm_index.size()) << std::endl;
-    std::cout << get_string(fm_index.size(), fm_index.size()+10) << std::endl;
+    std::cout << index++ << get_string(fm_index.size(), 0) << std::endl;
+    std::cout << index++ << get_string(fm_index.size(), fm_index.size()-10) << std::endl;
+    std::cout << index++ << get_string(fm_index.size(), fm_index.size()) << std::endl;
+    std::cout << index++ << get_string(fm_index.size(), fm_index.size()+10) << std::endl;
 
 #if 0
-    std::cout << get_string_nocheck(0, 0) << std::endl;
-    std::cout << get_string_nocheck(0, fm_index.size()-10) << std::endl;
-    std::cout << get_string_nocheck(0, fm_index.size()) << std::endl;
-    std::cout << get_string_nocheck(0, fm_index.size()+10) << std::endl;
+    index = 0;
+    std::cout << index++ << get_string_nocheck(0, 0) << std::endl;
+    std::cout << index++ << get_string_nocheck(0, fm_index.size()-10) << std::endl;
+    std::cout << index++ << get_string_nocheck(0, fm_index.size()) << std::endl;
+    std::cout << index++ << get_string_nocheck(0, fm_index.size()+10) << std::endl;
 
-    std::cout << get_string_nocheck(fm_index.size()-10, 0) << std::endl;
-    std::cout << get_string_nocheck(fm_index.size()-10, fm_index.size()-10) << std::endl;
-    std::cout << get_string_nocheck(fm_index.size()-10, fm_index.size()) << std::endl;
-    std::cout << get_string_nocheck(fm_index.size()-10, fm_index.size()+10) << std::endl;
+    std::cout << index++ << get_string_nocheck(fm_index.size()-10, 0) << std::endl;
+    std::cout << index++ << get_string_nocheck(fm_index.size()-10, fm_index.size()-10) << std::endl;
+    std::cout << index++ << get_string_nocheck(fm_index.size()-10, fm_index.size()) << std::endl;
+    std::cout << index++ << get_string_nocheck(fm_index.size()-10, fm_index.size()+10) << std::endl;
 
-    std::cout << get_string_nocheck(fm_index.size(), 0) << std::endl;
-    std::cout << get_string_nocheck(fm_index.size(), fm_index.size()-10) << std::endl;
-    std::cout << get_string_nocheck(fm_index.size(), fm_index.size()) << std::endl;
-    std::cout << get_string_nocheck(fm_index.size(), fm_index.size()+10) << std::endl;
+    std::cout << index++ << get_string_nocheck(fm_index.size(), 0) << std::endl;
+    std::cout << index++ << get_string_nocheck(fm_index.size(), fm_index.size()-10) << std::endl;
+    std::cout << index++ << get_string_nocheck(fm_index.size(), fm_index.size()) << std::endl;
+    std::cout << index++ << get_string_nocheck(fm_index.size(), fm_index.size()+10) << std::endl;
 #endif
 
     return 0;
