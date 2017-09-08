@@ -18,12 +18,10 @@ csa_wt<wt_huff<rrr_vector<127> >, 512, 1024> fm_index;
 string get_string(long start, long end)
 {
     string ret("");
-    if (!fm_index.empty()) {
-        if (start > fm_index.size() || end > fm_index.empty() || start > end || (end - start) > 1024*1024*2) {
-            return 1;
+        if (start >= fm_index.size() || end >= fm_index.size() || start > end || (end - start) > 1024*1024*2) {
+            return ret;
         }
         ret = extract(fm_index, start, end);
-    }
     return ret;
 }
 
@@ -57,9 +55,10 @@ int main(int argc, char** argv)
     }
     cout << "Index construction complete, index requires " << size_in_mega_bytes(fm_index) << " MiB. size:" << fm_index.size() << endl;
 
-    int index = 0;
+    int index = 1;
     std::cout << index++ << get_string(0, 0) << std::endl;
     std::cout << index++ << get_string(0, fm_index.size()-10) << std::endl;
+    std::cout << index++ << get_string(0, fm_index.size()-1) << std::endl;
     std::cout << index++ << get_string(0, fm_index.size()) << std::endl;
     std::cout << index++ << get_string(0, fm_index.size()+10) << std::endl;
 
@@ -72,9 +71,8 @@ int main(int argc, char** argv)
     std::cout << index++ << get_string(fm_index.size(), fm_index.size()-10) << std::endl;
     std::cout << index++ << get_string(fm_index.size(), fm_index.size()) << std::endl;
     std::cout << index++ << get_string(fm_index.size(), fm_index.size()+10) << std::endl;
-
 #if 0
-    index = 0;
+    index = 1;
     std::cout << index++ << get_string_nocheck(0, 0) << std::endl;
     std::cout << index++ << get_string_nocheck(0, fm_index.size()-10) << std::endl;
     std::cout << index++ << get_string_nocheck(0, fm_index.size()) << std::endl;
@@ -90,7 +88,6 @@ int main(int argc, char** argv)
     std::cout << index++ << get_string_nocheck(fm_index.size(), fm_index.size()) << std::endl;
     std::cout << index++ << get_string_nocheck(fm_index.size(), fm_index.size()+10) << std::endl;
 #endif
-
     return 0;
 }
 
