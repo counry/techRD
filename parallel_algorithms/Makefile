@@ -8,7 +8,8 @@ MY_CXX_OPT_FLAGS=-ffast-math -funroll-loops -D__extern_always_inline="extern __a
 
 
 CXX_FLAGS=$(MY_CXX_FLAGS) $(MY_CXX_OPT_FLAGS) -I$(INC_DIR) -L$(LIB_DIR)
-CCLIB=-Wl,-rpath=../../lib
+CCLIB=-fopenmp -Wl,-rpath=../../lib
+#CCLIB=-D_GLIBCXX_PARALLEL -Wl,-rpath=../../lib
 SOURCES=$(wildcard *.cpp)
 EXECS=$(SOURCES:.cpp=.x)
 
