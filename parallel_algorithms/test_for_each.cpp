@@ -6,39 +6,88 @@
 #include <parallel/algorithm>
 #include <vector>
 
+
+#define ITERM_NUM 100*10000
+
+class Data {
+public:
+    Data(unsigned int num) {
+        std::srand(std::time(0)); // use current time as seed for random generator
+        for (unsigned int i = 0; i < num; i++)
+        {
+            m_data_vec.push_back(std::rand());
+        }
+    }
+
+    bool find(int val) {
+        return std::find(m_data_vec.begin(), m_data_vec.end(), val) != m_data_vec.end();
+    }
+
+private:
+    std::vector<int> m_data_vec;
+};
+
+class Database {
+public:
+    static Database& get_database(void)
+    {
+        static Database database(ITERM_NUM);
+        return database;
+    }
+
+
+    bool find(int val) {
+        return m_data.find(val);
+    }
+
+private:
+    Database(unsigned int num):m_data(num) {}
+    Data m_data;
+};
+
+class Oper {
+public:
+    static void init() {
+        Database::get_database();
+    }
+
+    static bool find(int val) {
+        return Database::get_database().find(val);
+    }
+};
+
+
 int main()
 {
-    std::srand(std::time(0)); // use current time as seed for random generator
+    Oper::init();
 
-    std::vector<int> random_vector;
-    unsigned int vec_size = 50000000;
-    for (unsigned int i = 0; i < vec_size; i++) {
-        int random_variable = std::rand();
-        random_vector.push_back(random_variable);
+    std::vector<int> find_vec;
+    std::vector<bool> find_result_vec;
+    std::vector<bool> find_par_result_vec;
+    find_vec.clear();
+    std::srand(std::time(0)); // use current time as seed for random generator
+    for (unsigned int i = 0; i < 100000; i++)
+    {
+        find_vec.push_back(std::rand());
     }
+
 
     Timer timer;
 
-    std::vector<int> random_vector_sort(random_vector.begin(), random_vector.end());
+    find_result_vec.clear();
     timer.reset();
-    std::sort(random_vector_sort.begin(), random_vector_sort.end());
-    timer.write_text_to_screen("sort random vector");
+    std::for_each(find_vec.begin(), find_vec.end(), [&find_result_vec](int &n){ find_result_vec.push_back(Oper::find(n));});
+    timer.write_text_to_screen("for_each vector");
 
-    std::vector<int> random_vector_stable_sort(random_vector.begin(), random_vector.end());
+    find_par_result_vec.clear();
     timer.reset();
-    std::stable_sort(random_vector_stable_sort.begin(), random_vector_stable_sort.end());
-    timer.write_text_to_screen("stable_sort random vector");
-    
-    std::vector<int> random_vector_parallel_sort(random_vector.begin(), random_vector.end());
-    timer.reset();
-    __gnu_parallel::sort(random_vector_parallel_sort.begin(), random_vector_parallel_sort.end());
-    timer.write_text_to_screen("parallel_sort random vector");
-
-    std::vector<int> random_vector_parallel_stable_sort(random_vector.begin(), random_vector.end());
-    timer.reset();
-    __gnu_parallel::stable_sort(random_vector_parallel_stable_sort.begin(), random_vector_parallel_stable_sort.end());
-    timer.write_text_to_screen("parallel_stable_sort random vector");
+    __gnu_parallel::for_each(find_vec.begin(), find_vec.end(), [&find_result_vec](int &n){ find_result_vec.push_back(Oper::find(n));});
+    timer.write_text_to_screen("for_each_parallel vector");
+    if (find_par_result_vec == find_result_vec) {
+        std::cout << "find result is ok" << std::endl;
+    } else {
+        std::cout << "find result is error" << std::endl;
+    }
     return 0;
-
 }
 
