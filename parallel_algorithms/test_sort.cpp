@@ -23,21 +23,25 @@ int main()
     timer.reset();
     std::sort(random_vector_sort.begin(), random_vector_sort.end());
     timer.write_text_to_screen("sort random vector");
+    std::cout << "random_vector_sort_size:" << random_vector_sort.size() << std::endl;
 
     std::vector<int> random_vector_stable_sort(random_vector.begin(), random_vector.end());
     timer.reset();
     std::stable_sort(random_vector_stable_sort.begin(), random_vector_stable_sort.end());
     timer.write_text_to_screen("stable_sort random vector");
+    std::cout << "random_vector_stable_sort_size:" << random_vector_stable_sort.size() << std::endl;
     
     std::vector<int> random_vector_parallel_sort(random_vector.begin(), random_vector.end());
     timer.reset();
     __gnu_parallel::sort(random_vector_parallel_sort.begin(), random_vector_parallel_sort.end());
     timer.write_text_to_screen("parallel_sort random vector");
+    std::cout << "random_vector_parallel_sort_size:" << random_vector_parallel_sort.size() << std::endl;
 
     std::vector<int> random_vector_parallel_stable_sort(random_vector.begin(), random_vector.end());
     timer.reset();
     __gnu_parallel::stable_sort(random_vector_parallel_stable_sort.begin(), random_vector_parallel_stable_sort.end());
     timer.write_text_to_screen("parallel_stable_sort random vector");
+    std::cout << "random_vector_parallel_stable_sort_size:" << random_vector_parallel_stable_sort.size() << std::endl;
     return 0;
 
 }

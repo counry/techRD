@@ -3,6 +3,7 @@
 #include <iostream>
 #include <time_util.hpp>
 #include <ctime>
+#include <algorithm>
 #include <parallel/algorithm>
 #include <vector>
 
