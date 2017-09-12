@@ -69,7 +69,7 @@ int main()
     std::vector<bool> find_par_atomic_result_vec;
     find_vec.clear();
     std::srand(std::time(0)); // use current time as seed for random generator
-    for (unsigned int i = 0; i < 100000; i++)
+    for (unsigned int i = 0; i < ITERM_NUM/100; i++)
     {
         find_vec.push_back(std::rand());
     }
