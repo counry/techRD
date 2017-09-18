@@ -6,6 +6,7 @@
 #include <parallel/algorithm>
 #include <vector>
 #include <array>
+#include <iomanip>
 
 uint32_t ilatitude(double lat)
 {
@@ -50,8 +51,8 @@ int main()
     lon = -118.8107007;
     coords.push_back({lat, lon});
 
-    lat = -72.883245;
-    lon = 35.733876;
+    lat = -72.8832451;
+    lon = 35.7338765;
     coords.push_back({lat, lon});
 
     lat = -55.0658177;
@@ -62,8 +63,8 @@ int main()
     for (auto c : coords) {
         double _lat = c.front();
         double _lon = c.back();
-        std::cout << "transform lat " << _lat << " to " << latitude(ilatitude(_lat)) << std::endl;
-        std::cout << "transform lon " << _lon << " to " << longitude(ilongitude(_lon)) << std::endl;
+        std::cout << "transform lat " << std::setprecision(10) << _lat << " to " << std::setprecision(10) << latitude(ilatitude(_lat)) << std::endl;
+        std::cout << "transform lon " << std::setprecision(10) << _lon << " to " << std::setprecision(10) << longitude(ilongitude(_lon)) << std::endl;
     }
 
     return 0;
