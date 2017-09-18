@@ -8,6 +8,15 @@
 #include <iostream>
 #include <iomanip>
 
+#if 0
+template <class Function>
+__int64 time_call(Function&& f)
+{
+    __int64 begin = GetTickCount();
+    f();
+    return GetTickCount() - begin;
+}
+#endif
 
 void write_text_to_log_file( const std::string &text );
 
