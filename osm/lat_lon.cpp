@@ -63,8 +63,10 @@ int main()
     for (auto c : coords) {
         double _lat = c.front();
         double _lon = c.back();
-        std::cout << "transform lat " << std::setprecision(10) << _lat << " to " << std::setprecision(10) << latitude(ilatitude(_lat)) << std::endl;
-        std::cout << "transform lon " << std::setprecision(10) << _lon << " to " << std::setprecision(10) << longitude(ilongitude(_lon)) << std::endl;
+	uint64_t u64_lat = ilatitude(_lat);
+	uint64_t u64_lon = ilongitude(_lon);
+        std::cout << "transform lat " << std::setprecision(10) << _lat << " to " << std::setprecision(10) << latitude(u64_lat) << std::endl;
+        std::cout << "transform lon " << std::setprecision(10) << _lon << " to " << std::setprecision(10) << longitude(u64_lon) << std::endl;
     }
 
     return 0;
