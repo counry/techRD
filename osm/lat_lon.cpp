@@ -65,8 +65,10 @@ int main()
         double _lon = c.back();
 	uint64_t u64_lat = ilatitude(_lat);
 	uint64_t u64_lon = ilongitude(_lon);
-        std::cout << "transform lat " << std::setprecision(10) << _lat << " to " << std::setprecision(10) << latitude(u64_lat) << std::endl;
-        std::cout << "transform lon " << std::setprecision(10) << _lon << " to " << std::setprecision(10) << longitude(u64_lon) << std::endl;
+        std::cout << "transform precision10 lat " << std::setprecision(10) << _lat << " to " << std::setprecision(10) << latitude(u64_lat) << std::endl;
+        std::cout << "transform lat " << _lat << " to " <<  latitude(u64_lat) << std::endl;
+        std::cout << "transform precision10 lon " << std::setprecision(10) << _lon << " to " << std::setprecision(10) << longitude(u64_lon) << std::endl;
+        std::cout << "transform lon " << _lon << " to " <<  longitude(u64_lon) << std::endl;
     }
 
     return 0;
