@@ -1,4 +1,6 @@
+
 #include <sdsl/suffix_arrays.hpp>
+#include <sdsl/suffix_trees.hpp>
 #include <string>
 #include <iostream>
 #include <algorithm>
@@ -17,7 +19,6 @@ using namespace std;
 
 void test_fm_csa_wt1(char* file, string identify="csa_wt1")
 {
-    string identify = __FUNCTION__;
     csa_wt<wt_huff<rrr_vector<127> >, 512, 1024> fm_index;
     string index_suffix = ".fm."+ identify + ".index";
     string index_file   = string(file)+index_suffix;
@@ -165,7 +166,7 @@ void test_fm_csa_sada(char* file, string identify="csa_sada")
     }
     timer.write_text_to_screen(identify);
 }
-
+#if 0
 void test_fm_cst_sada(char* file, string identify="cst_sada")
 {
     cst_sada<> fm_index;
@@ -190,7 +191,6 @@ void test_fm_cst_sada(char* file, string identify="cst_sada")
     }
     timer.write_text_to_screen(identify);
 }
-
 void test_fm_cst_sct3_a(char* file, string identify="cst_sct3_a")
 {
     cst_sct3<> fm_index;
@@ -265,7 +265,9 @@ void test_fm_cst_sct3_c(char* file, string identify="cst_sct3_c")
     }
     timer.write_text_to_screen(identify);
 }
+#endif
 
+#if 0
 void test_fm_wt_hutu(char* file, string identify="wt_hutu")
 {
     //wt_hutu<> fm_index;
@@ -291,7 +293,6 @@ void test_fm_wt_hutu(char* file, string identify="wt_hutu")
     }
     timer.write_text_to_screen(identify);
 }
-
 void test_fm_wt_int(char* file, string identify="wt_int")
 {
     //wt_int<> fm_index;
@@ -344,6 +345,7 @@ void test_fm_wt_huff_int(char* file, string identify="wt_huff_int")
     timer.write_text_to_screen(identify);
 }
 
+#endif
 
 int main(int argc, char** argv)
 {
@@ -366,19 +368,19 @@ int main(int argc, char** argv)
     std::cout << endl;
     test_fm_csa_sada(argv[1]);
     std::cout << endl;
-    test_fm_cst_sada(argv[1]);
-    std::cout << endl;
-    test_fm_cst_sct3_a(argv[1]);
-    std::cout << endl;
-    test_fm_cst_sct3_b(argv[1]);
-    std::cout << endl;
-    test_fm_cst_sct3_c(argv[1]);
-    std::cout << endl;
-    test_fm_wt_hutu(argv[1]);
-    std::cout << endl;
-    test_fm_wt_int(argv[1]);
-    std::cout << endl;
-    test_fm_wt_huff_int(argv[1]);
+    //test_fm_cst_sada(argv[1]);
+    //std::cout << endl;
+    //test_fm_cst_sct3_a(argv[1]);
+    //std::cout << endl;
+    //test_fm_cst_sct3_b(argv[1]);
+    //std::cout << endl;
+    //test_fm_cst_sct3_c(argv[1]);
+    //std::cout << endl;
+    //test_fm_wt_hutu(argv[1]);
+    //std::cout << endl;
+    //test_fm_wt_int(argv[1]);
+    //std::cout << endl;
+    //test_fm_wt_huff_int(argv[1]);
     return 0;
 }
 
