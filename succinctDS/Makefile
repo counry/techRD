@@ -1,6 +1,8 @@
 
 LIB_DIR = ../../lib
+LIB_DIR += ../../lz4/lz4-install/usr/local/lib
 INC_DIR = ../../include
+INC_DIR += ../../lz4/lz4-install/usr/local/include
 #加-pg参数后性能会下降
 
 #MY_CXX_FLAGS=-g -Wall -w -O0 -ggdb -fsanitize=address -fno-omit-frame-pointer -fsanitize=leak -I ./ -DMUDUO_STD_STRING -pthread -DHAVE_NETINET_IN_H -fpermissive -fvisibility=hidden -fPIC -std=c++11 -march=native -DNDEBUG $(CODE_COVER)
@@ -10,7 +12,7 @@ MY_CXX_OPT_FLAGS=-ffast-math -funroll-loops -D__extern_always_inline="extern __a
 
 
 CXX_FLAGS=$(MY_CXX_FLAGS) $(MY_CXX_OPT_FLAGS) -I$(INC_DIR) -L$(LIB_DIR)
-CCLIB=-lsdsl -ldivsufsort -ldivsufsort64 -lmarisa -Wl,-rpath=../../lib
+CCLIB=-lsdsl -ldivsufsort -ldivsufsort64 -lmarisa -llz4 -Wl,-rpath=../../lib -Wl,-rpath=../../lz4/lz4-install/usr/local/lib
 SOURCES=$(wildcard *.cpp)
 EXECS=$(SOURCES:.cpp=.x)
 
