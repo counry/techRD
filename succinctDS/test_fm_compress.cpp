@@ -53,39 +53,67 @@ void test_lz4(char* file, string identify = "lz4")
     std::ifstream fin;
     fin.open(file, std::ifstream::in);
     if (fin.is_open()) {
-        auto size = fin.tellg();
+        auto size = fin.tellg()+1;
         cout << "file " << file << " size " << size << endl;
-        std::string str(size+1, '\0'); // construct string to stream size
+        std::string str(size, '\0'); // construct string to stream size
         fin.seekg(0);
-        if (!fin.read(&str[0], size)) {
+        if (!fin.read(&str[0], size-1)) {
             cout << "ERROR: File " << file << " read error" << endl;
         }
-        char dst[1024*1024*10];
-        memset(dst, 0x0, sizeof(dst));
-        int rv = LZ4_compress_default(str.c_str(), dst, str.size(), sizeof(dst));
-        cout << "LZ4_compress_default return " << rv << endl;
-        if (rv < 1) {
-            cout << "Couldn't run LZ4_compress_default()... error code received is in exit code. return " << rv << endl;
+        const int src_size = str.size();
+        int max_dst_size = LZ4_compressBound(src_size);
+        cout << "read str size " << src_size << "lz4 max_dst_size " << max_dst_size << endl;
+
+        //compression
+        char* compressed_data = malloc(max_dst_size);
+        if (compressed_data == NULL) {
+            cout << "Failed to allocate memory for *compressed_data." << endl;
+        }
+        const int compressed_data_size = LZ4_compress_default(&str[0], compressed_data, src_size, max_dst_size);
+        if (compressed_data_size < 0) {
+            cout << "A negative result from LZ4_compress_default indicates a failure trying to compress the data.  See exit code (echo $?) for value returned." << endl;
+        }
+        if (compressed_data_size == 0) {
+            cout << "A result of 0 means compression worked, but was stopped because the destination buffer couldn't hold all the information." << endl;
+        }
+        if (compressed_data_size > 0) {
+            cout << "We successfully compressed some data! src_size = " << src_size << " compressed_data_size = " << compressed_data_size << endl;
+        }
+        compressed_data = (char *)realloc(compressed_data, compressed_data_size);
+        if (compressed_data == NULL) {
+            cout << "Failed to re-alloc memory for compressed_data." << endl;
         }
 
-        char dst_decompress[1024*1024*30];
-        memset(dst_decompress, 0x0, sizeof(dst_decompress));
-        Timer timer;
-        rv = LZ4_decompress_safe(dst, dst_decompress, sizeof(dst)-1, sizeof(dst_decompress)-1);
-        timer.write_text_to_screen(identify);
-        cout << "LZ4_decompress_safe return " << rv << endl;
-        if (rv < 1) {
-            cout << "Couldn't run LZ4_decompress_safe()... error code received is in exit code. return " << rv << endl;
+
+
+        //Decompression
+        char* const regen_buffer = malloc(src_size);
+        if (regen_buffer == NULL) {
+            cout << "Failed to allocate memory for *regen_buffer." << endl;
         }
+        Timer timer;
+        const int decompressed_size = LZ4_decompress_safe(compressed_data, regen_buffer, compressed_data_size, src_size);
+        timer.write_text_to_screen(identify);
+        free(compressed_data);
+        if (decompressed_size < 0) {
+            cout << "A negative result from LZ4_decompress_safe indicates a failure trying to decompress the data.  See exit code (echo $?) for value returned." << endl;
+        }
+        if (decompressed_size == 0) {
+            cout << "I'm not sure this function can ever return 0.  Documentation in lz4.h doesn't indicate so." << endl;
+        }
+        if (decompressed_size > 0) {
+            cout << "We successfully decompressed some data! decompressed_size " << decompressed_size << endl;
+        }
+
     } else {
         cout << "ERROR: File " << file << " does not exist. Exit." << endl;
         return 1;
     }
-
 }
 
 void test_lz4_simple()
 {
+    //compression
 	const char* const src = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.";
 	const int src_size = (int)(strlen(src) + 1);
 	const int max_dst_size = LZ4_compressBound(src_size);
