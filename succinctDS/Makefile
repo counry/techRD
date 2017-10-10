@@ -1,8 +1,8 @@
 
 LIB_DIR = ../../lib
-LIB_DIR += ../../lz4/lz4-install/usr/local/lib
+LIB_DIR += -L ../../lz4/lz4-install/usr/local/lib
 INC_DIR = ../../include
-INC_DIR += ../../lz4/lz4-install/usr/local/include
+INC_DIR += -I ../../lz4/lz4-install/usr/local/include
 #加-pg参数后性能会下降
 
 #MY_CXX_FLAGS=-g -Wall -w -O0 -ggdb -fsanitize=address -fno-omit-frame-pointer -fsanitize=leak -I ./ -DMUDUO_STD_STRING -pthread -DHAVE_NETINET_IN_H -fpermissive -fvisibility=hidden -fPIC -std=c++11 -march=native -DNDEBUG $(CODE_COVER)

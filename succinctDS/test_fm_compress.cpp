@@ -45,7 +45,7 @@ void test_fm(char* file, string identify)
 }
 
 
-void test_lz4(char* file)
+void test_lz4(char* file, string identify = "lz4")
 {
     string index_suffix = ".fm."+ identify + ".index";
     string index_file   = string(file)+index_suffix;
@@ -56,13 +56,13 @@ void test_lz4(char* file)
         auto size = fin.tellg();
         cout << "file " << file << " size " << size << endl;
         std::string str(size+1, '\0'); // construct string to stream size
-        is.seekg(0);
-        if (!is.read(&str[0], size)) {
+        fin.seekg(0);
+        if (!fin.read(&str[0], size)) {
             cout << "ERROR: File " << file << " read error" << endl;
         }
         char dst[1024*1024*10];
         memset(dst, 0x0, sizeof(dst));
-        int rv = LZ4_compress_default(str.c_str(), dst, str.size(), sizeof(dst)-1);
+        int rv = LZ4_compress_default(str.c_str(), dst, str.size(), sizeof(dst));
         cout << "LZ4_compress_default return " << rv << endl;
         if (rv < 1) {
             cout << "Couldn't run LZ4_compress_default()... error code received is in exit code. return " << rv << endl;
@@ -83,6 +83,50 @@ void test_lz4(char* file)
     }
 
 }
+
+void test_lz4_simple()
+{
+	const char* const src = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.";
+	const int src_size = (int)(strlen(src) + 1);
+	const int max_dst_size = LZ4_compressBound(src_size);
+	cout << "get max_dst_size " << max_dst_size << endl;
+	char* compressed_data = malloc(max_dst_size);
+	if (compressed_data == NULL) {
+		cout << "Failed to allocate memory for *compressed_data." << endl;
+	}
+	const int compressed_data_size = LZ4_compress_default(src, compressed_data, src_size, max_dst_size);
+	if (compressed_data_size < 0) {
+		cout << "A negative result from LZ4_compress_default indicates a failure trying to compress the data.  See exit code (echo $?) for value returned." << endl;
+	}
+	if (compressed_data_size == 0) {
+		cout << "A result of 0 means compression worked, but was stopped because the destination buffer couldn't hold all the information." << endl;
+	}
+	if (compressed_data_size > 0) {
+		cout << "We successfully compressed some data! src_size = " << src_size << " compressed_data_size = " << compressed_data_size << endl;
+	}
+	compressed_data = (char *)realloc(compressed_data, compressed_data_size);
+	if (compressed_data == NULL) {
+    		cout << "Failed to re-alloc memory for compressed_data." << endl;
+	}	
+
+	//Decompression
+	char* const regen_buffer = malloc(src_size);
+	if (regen_buffer == NULL) {
+		cout << "Failed to allocate memory for *regen_buffer." << endl;
+	}
+	const int decompressed_size = LZ4_decompress_safe(compressed_data, regen_buffer, compressed_data_size, src_size);
+	free(compressed_data);
+	if (decompressed_size < 0) {
+		cout << "A negative result from LZ4_decompress_safe indicates a failure trying to decompress the data.  See exit code (echo $?) for value returned." << endl;
+	}
+	if (decompressed_size == 0) {
+		cout << "I'm not sure this function can ever return 0.  Documentation in lz4.h doesn't indicate so." << endl;
+	}
+	if (decompressed_size > 0) {
+		cout << "We successfully decompressed some data! decompressed_size " << decompressed_size << endl;
+	}
+}
+
 
 #if 0
 void test_fm_csa_wt2(char* file, string identify="csa_wt2")
@@ -220,6 +264,7 @@ int main(int argc, char** argv)
         cout << "    text_file      Original text file." << endl;
         return 1;
     }
+#if 0
     test_fm<csa_wt<wt_huff<rrr_vector<127> >, 512, 1024>>(argv[1], "wt_huff<rrr_vector<127>>,512,1024>");
     std::cout << endl;
     test_fm<csa_wt<>>(argv[1], "csa_wt<>");
@@ -231,9 +276,10 @@ int main(int argc, char** argv)
     test_fm<csa_bitcompressed<>>(argv[1], "csa_bitcompressed<>");
     std::cout << endl;
     test_fm<csa_sada<>>(argv[1], "csa_sada<>");
-
+#endif
     std::cout << endl;
-    test_lz4(argv[1]);
+    //test_lz4(argv[1]);
+    test_lz4_simple();
 
     return 0;
 }
