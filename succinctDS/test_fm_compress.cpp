@@ -21,6 +21,7 @@ using namespace std;
 template<class t_fm>
 void test_fm(char* file, string identify)
 {
+    cout << "start " << identify << "......" << endl;
     t_fm fm_index;
     string index_suffix = ".fm."+ identify + ".index";
     string index_file   = string(file)+index_suffix;
@@ -36,23 +37,23 @@ void test_fm(char* file, string identify)
         store_to_file(fm_index, index_file); // save it
     }
     cout << "Index construction complete, " << identify << " index requires " << size_in_mega_bytes(fm_index) << " MiB." << endl;
-
+    cout << "extract size " << fm_index.size() << endl;
     Timer timer;
     for(int i = 0; i < EXTRACT_NUMBER; i++) {
         extract(fm_index, 0, fm_index.size());
     }
     timer.write_text_to_screen(identify);
+    cout << "end " << identify << "......" << endl << endl;
 }
 
 
 void test_lz4(char* file, string identify = "lz4")
 {
+    cout << "start " << identify << "......"  << endl;
     string index_suffix = ".fm."+ identify + ".index";
     string index_file   = string(file)+index_suffix;
 
-    std::ifstream fin;
-    fin.open(file, std::ifstream::in);
-    if (fin.is_open()) {
+    if (std::ifstream fin{file, std::ios::binary | std::ios::ate}) {
         auto size = fin.tellg()+1;
         cout << "file " << file << " size " << size << endl;
         std::string str(size, '\0'); // construct string to stream size
@@ -62,7 +63,7 @@ void test_lz4(char* file, string identify = "lz4")
         }
         const int src_size = str.size();
         int max_dst_size = LZ4_compressBound(src_size);
-        cout << "read str size " << src_size << "lz4 max_dst_size " << max_dst_size << endl;
+        cout << "read str size " << src_size << " lz4 max_dst_size " << max_dst_size << endl;
 
         //compression
         char* compressed_data = malloc(max_dst_size);
@@ -91,9 +92,13 @@ void test_lz4(char* file, string identify = "lz4")
         if (regen_buffer == NULL) {
             cout << "Failed to allocate memory for *regen_buffer." << endl;
         }
+
+	int decompressed_size = 0;
         Timer timer;
-        const int decompressed_size = LZ4_decompress_safe(compressed_data, regen_buffer, compressed_data_size, src_size);
-        timer.write_text_to_screen(identify);
+    	for(int i = 0; i < EXTRACT_NUMBER; i++) {
+        	decompressed_size = LZ4_decompress_safe(compressed_data, regen_buffer, compressed_data_size, src_size);
+        }
+	timer.write_text_to_screen(identify);
         free(compressed_data);
         if (decompressed_size < 0) {
             cout << "A negative result from LZ4_decompress_safe indicates a failure trying to decompress the data.  See exit code (echo $?) for value returned." << endl;
@@ -109,11 +114,12 @@ void test_lz4(char* file, string identify = "lz4")
         cout << "ERROR: File " << file << " does not exist. Exit." << endl;
         return 1;
     }
+    cout << "end " << identify << "......" << endl << endl;
 }
 
 void test_lz4_simple()
 {
-    //compression
+    	//compression
 	const char* const src = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.";
 	const int src_size = (int)(strlen(src) + 1);
 	const int max_dst_size = LZ4_compressBound(src_size);
@@ -292,8 +298,7 @@ int main(int argc, char** argv)
         cout << "    text_file      Original text file." << endl;
         return 1;
     }
-#if 0
-    test_fm<csa_wt<wt_huff<rrr_vector<127> >, 512, 1024>>(argv[1], "wt_huff<rrr_vector<127>>,512,1024>");
+    test_fm<csa_wt<wt_huff<rrr_vector<127> >, 512, 1024>>(argv[1], "csa_wt<wt_huff<rrr_vector<127> >, 512, 1024>");
     std::cout << endl;
     test_fm<csa_wt<>>(argv[1], "csa_wt<>");
     std::cout << endl;
@@ -304,10 +309,9 @@ int main(int argc, char** argv)
     test_fm<csa_bitcompressed<>>(argv[1], "csa_bitcompressed<>");
     std::cout << endl;
     test_fm<csa_sada<>>(argv[1], "csa_sada<>");
-#endif
     std::cout << endl;
-    //test_lz4(argv[1]);
-    test_lz4_simple();
+    test_lz4(argv[1]);
+    //test_lz4_simple();
 
     return 0;
 }
