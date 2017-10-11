@@ -14,11 +14,15 @@
 #include <lz4.h>
 #include <brotli/encode.h>
 #include <brotli/decode.h>
+#include <marisa.h>
 
 using namespace sdsl;
 using namespace std;
 
 #define EXTRACT_NUMBER 10
+#define TRIE_NUMBER 100
+
+char *gtest = NULL;
 
 template<class t_fm>
 void test_fm(char* file, string identify)
@@ -234,156 +238,67 @@ void test_lz4_simple()
 }
 
 
-#if 0
-void test_fm_csa_wt2(char* file, string identify="csa_wt2")
-{
-    csa_wt<> fm_index;
-    string index_suffix = ".fm."+ identify + ".index";
-    string index_file   = string(file)+index_suffix;
-
-    if (!load_from_file(fm_index, index_file)) {
-        ifstream in(file);
-        if (!in) {
-            cout << "ERROR: File " << file << " does not exist. Exit." << endl;
-            return 1;
+char ALPHABET[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ=";
+void MakeKeyset(std::size_t num_keys, marisa::TailMode tail_mode, marisa::Keyset *keyset) {
+    char key_buf[64];
+    for (std::size_t i = 0; i < num_keys; ++i) {
+        std::size_t length = sizeof(key_buf);
+        for (std::size_t j = 0; j < length; ++j) {
+            key_buf[j] = ALPHABET[(std::rand() % sizeof(ALPHABET)-1)];
         }
-        cout << "No index "<<index_file<< " located. Building index now." << endl;
-        construct(fm_index, file, 1); // generate index
-        store_to_file(fm_index, index_file); // save it
+        keyset->push_back(key_buf, length);
     }
-    cout << "Index construction complete, " << identify << " index requires " << size_in_mega_bytes(fm_index) << " MiB." << endl;
+    if (gtest == NULL) {
+        std::cout << "gtest is null" << std::endl;
+        return;
+    } else {
+        std::cout << "gtest : " << gtest << " gtest_size : " << strlen(gtest) << std::endl;
+    }
+    keyset->push_back(gtest, strlen(gtest));
+}
 
+void test_marisa_trie(std::string identify="marisa_trie") {
+    marisa::Trie gtrie;
+    marisa::Keyset gkeyset;
+
+    MakeKeyset(TRIE_NUMBER, MARISA_DEFAULT_TAIL, &gkeyset);
+    gtrie.build(gkeyset);
+    std::cout << "finish build trie..." << std::endl;
+    std::cout << "gkeyset key number:[" <<  gkeyset.size()  << "]total length in byte:[" << gkeyset.total_length() << "]" << std::endl;
+    std::cout << "gtrie key number:[" <<  gtrie.size()  << "]total length in byte:[" << gtrie.io_size() << "]" << std::endl;
+
+
+    marisa::Agent agent;
+    agent.set_query(gtest, strlen(gtest));
+    gtrie.lookup(agent);
+    std::cout.write(agent.key().ptr(), agent.key().length());
+    std::cout << ": " << agent.key().id() << std::endl;
     Timer timer;
     for(int i = 0; i < EXTRACT_NUMBER; i++) {
-        extract(fm_index, 0, fm_index.size());
+        marisa::Agent _agent;
+        _agent.set_query(agent.key().id());
+        gtrie.reverse_lookup(_agent);
+        std::cout << "rlookup " << agent.key().id() << " result : " << _agent.key().ptr() << std::endl;
     }
     timer.write_text_to_screen(identify);
 }
-
-void test_fm_csa_wt3(char* file, string identify="csa_wt3")
-{
-    csa_wt<wt_huff<rrr_vector<63>>,4,8> fm_index;
-    string index_suffix = ".fm."+ identify + ".index";
-    string index_file   = string(file)+index_suffix;
-
-    if (!load_from_file(fm_index, index_file)) {
-        ifstream in(file);
-        if (!in) {
-            cout << "ERROR: File " << file << " does not exist. Exit." << endl;
-            return 1;
-        }
-        cout << "No index "<<index_file<< " located. Building index now." << endl;
-        construct(fm_index, file, 1); // generate index
-        store_to_file(fm_index, index_file); // save it
-    }
-    cout << "Index construction complete, " << identify << " index requires " << size_in_mega_bytes(fm_index) << " MiB." << endl;
-
-    Timer timer;
-    for(int i = 0; i < EXTRACT_NUMBER; i++) {
-        extract(fm_index, 0, fm_index.size());
-    }
-    timer.write_text_to_screen(identify);
-}
-
-void test_fm_csa_wt4(char* file, string identify="csa_wt4")
-{
-    csa_wt<wt_int<rrr_vector<63>>> fm_index;
-    string index_suffix = ".fm."+ identify + ".index";
-    string index_file   = string(file)+index_suffix;
-
-    if (!load_from_file(fm_index, index_file)) {
-        ifstream in(file);
-        if (!in) {
-            cout << "ERROR: File " << file << " does not exist. Exit." << endl;
-            return 1;
-        }
-        cout << "No index "<<index_file<< " located. Building index now." << endl;
-        construct(fm_index, file, 1); // generate index
-        store_to_file(fm_index, index_file); // save it
-    }
-    cout << "Index construction complete, " << identify << " index requires " << size_in_mega_bytes(fm_index) << " MiB." << endl;
-
-    Timer timer;
-    for(int i = 0; i < EXTRACT_NUMBER; i++) {
-        extract(fm_index, 0, fm_index.size());
-    }
-    timer.write_text_to_screen(identify);
-}
-
-void test_fm_csa_bitcompressed(char* file, string identify="csa_bitcompressed")
-{
-    csa_bitcompressed<> fm_index;
-    string index_suffix = ".fm."+ identify + ".index";
-    string index_file   = string(file)+index_suffix;
-
-    if (!load_from_file(fm_index, index_file)) {
-        ifstream in(file);
-        if (!in) {
-            cout << "ERROR: File " << file << " does not exist. Exit." << endl;
-            return 1;
-        }
-        cout << "No index "<<index_file<< " located. Building index now." << endl;
-        construct(fm_index, file, 1); // generate index
-        store_to_file(fm_index, index_file); // save it
-    }
-    cout << "Index construction complete, " << identify << " index requires " << size_in_mega_bytes(fm_index) << " MiB." << endl;
-
-    Timer timer;
-    for(int i = 0; i < EXTRACT_NUMBER; i++) {
-        extract(fm_index, 0, fm_index.size());
-    }
-    timer.write_text_to_screen(identify);
-}
-
-void test_fm_csa_sada(char* file, string identify="csa_sada")
-{
-    csa_sada<> fm_index;
-    string index_suffix = ".fm."+ identify + ".index";
-    string index_file   = string(file)+index_suffix;
-
-    if (!load_from_file(fm_index, index_file)) {
-        ifstream in(file);
-        if (!in) {
-            cout << "ERROR: File " << file << " does not exist. Exit." << endl;
-            return 1;
-        }
-        cout << "No index "<<index_file<< " located. Building index now." << endl;
-        construct(fm_index, file, 1); // generate index
-        store_to_file(fm_index, index_file); // save it
-    }
-    cout << "Index construction complete, " << identify << " index requires " << size_in_mega_bytes(fm_index) << " MiB." << endl;
-
-    Timer timer;
-    for(int i = 0; i < EXTRACT_NUMBER; i++) {
-        extract(fm_index, 0, fm_index.size());
-    }
-    timer.write_text_to_screen(identify);
-}
-#endif
 
 int main(int argc, char** argv)
 {
-    if (argc <  2) {
-        cout << "Usage " << argv[0] << " text_file" << endl;
-        cout << "    This program constructs a very compact FM-index" << endl;
-        cout << "    which supports count, locate, and extract queries." << endl;
-        cout << "    text_file      Original text file." << endl;
-        return 1;
-    }
-    test_fm<csa_wt<wt_huff<rrr_vector<127> >, 512, 1024>>(argv[1], "csa_wt<wt_huff<rrr_vector<127> >, 512, 1024>");
+    char *gtest = "<node id=\"531645739\" lat=\"33.301707\" lon=\"117.098392\"/>";
+    std::srand((unsigned int)std::time(NULL));
+    test_marisa_trie();
     std::cout << endl;
-    test_fm<csa_wt<>>(argv[1], "csa_wt<>");
+
+    std::ofstream("test1.txt", std::ios::binary) << gtest;
+
+    test_fm<csa_wt<wt_huff<rrr_vector<127> >, 512, 1024>>("test1.txt", "csa_wt<wt_huff<rrr_vector<127> >, 512, 1024>");
     std::cout << endl;
-    test_fm<csa_wt<wt_huff<rrr_vector<63>>,4,8>>(argv[1], "csa_wt<wt_huff<rrr_vector<63>>,4,8>");
+
+    test_lz4("test1.txt");
     std::cout << endl;
-    test_fm<csa_wt<wt_int<rrr_vector<63>>>>(argv[1], "csa_wt<wt_int<rrr_vector<63>>>");
-    std::cout << endl;
-    test_fm<csa_bitcompressed<>>(argv[1], "csa_bitcompressed<>");
-    std::cout << endl;
-    test_fm<csa_sada<>>(argv[1], "csa_sada<>");
-    std::cout << endl;
-    test_lz4(argv[1]);
-    test_Brotli(argv[1]);
+
+    //test_Brotli(argv[1]);
     //test_lz4_simple();
 
     return 0;
