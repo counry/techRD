@@ -20,7 +20,7 @@ using namespace sdsl;
 using namespace std;
 
 #define EXTRACT_NUMBER 10
-#define TRIE_NUMBER 1000000
+#define TRIE_NUMBER 1000
 
 char *gtest = NULL;
 
@@ -135,26 +135,27 @@ void test_Brotli(char* file, string identify = "Brotli")
         if (!fin.read(&str[0], size-1)) {
             cout << "ERROR: File " << file << " read error" << endl;
         }
-        const int src_size = str.size();
-        int max_dst_size = BrotliEncoderMaxCompressedSize(src_size);
-        cout << "read str size " << src_size << " lz4 max_dst_size " << max_dst_size << endl;
+        size_t src_size = str.size();
+        size_t max_dst_size = BrotliEncoderMaxCompressedSize(src_size);
+        cout << "read str size " << src_size << " brotli max_dst_size " << max_dst_size << endl;
 
         //compression
-        char* compressed_data = malloc(max_dst_size);
+        char* compressed_data = malloc(max_dst_size*2);
         if (compressed_data == NULL) {
             cout << "Failed to allocate memory for *compressed_data." << endl;
         }
         memset(compressed_data, 0x0, sizeof(compressed_data));
-        BROTLI_BOOL compressed_data_ret = BrotliEncoderCompress(::BROTLI_DEFAULT_QUALITY, ::BROTLI_DEFAULT_WINDOW, ::BROTLI_DEFAULT_MODE,
-                                                            src_size, &str[0], max_dst_size, compressed_data);
-
-        if (compressed_data_ret == ::BROTLI_FALSE) {
+        BROTLI_BOOL compressed_data_ret = BrotliEncoderCompress(BROTLI_DEFAULT_QUALITY, BROTLI_DEFAULT_WINDOW, BROTLI_DEFAULT_MODE,
+                                                            src_size, &str[0], &max_dst_size, compressed_data);
+	
+        if (compressed_data_ret == BROTLI_FALSE) {
             cout << "A negative result from BrotliEncoderCompress indicates a failure trying to compress the data.  See exit code (echo $?) for value returned." << endl;
             return;
-        }
+        } else {
+	    cout << "compress_size " << max_dst_size << std::endl;
+	}
 
-        const int compressed_data_size = strlen(compressed_data);
-        cout << "compressed_data size " << compressed_data_size << std::endl;
+        const int compressed_data_size = max_dst_size;
 
         compressed_data = (char *)realloc(compressed_data, compressed_data_size);
         if (compressed_data == NULL) {
@@ -171,13 +172,15 @@ void test_Brotli(char* file, string identify = "Brotli")
         BrotliDecoderResult decompressed_ret;
         Timer timer;
         for(int i = 0; i < EXTRACT_NUMBER; i++) {
-            decompressed_ret = BrotliDecoderDecompress(compressed_data_size, compressed_data, src_size, regen_buffer);
+		
+            decompressed_ret = BrotliDecoderDecompress(compressed_data_size, compressed_data, &src_size, regen_buffer);
             if (decompressed_ret != BROTLI_DECODER_RESULT_SUCCESS) {
                 cout << "A negative result from BrotliDecoderDecompress indicates a failure trying to decompress the data.  See exit code (echo $?) for value returned." << endl;
                 return;
             }
         }
         timer.write_text_to_screen(identify);
+	cout << "decompressed_size " << src_size << endl;
         free(compressed_data);
 
     } else {

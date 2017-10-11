@@ -15,7 +15,7 @@ MY_CXX_OPT_FLAGS=-ffast-math -funroll-loops -D__extern_always_inline="extern __a
 
 
 CXX_FLAGS=$(MY_CXX_FLAGS) $(MY_CXX_OPT_FLAGS) -I$(INC_DIR) -L$(LIB_DIR)
-CCLIB=-lsdsl -ldivsufsort -ldivsufsort64 -lmarisa -llz4 -lbrotlicommon-static -lbrotlidec-static -lbrotlienc-static -Wl,-rpath=../../lib -Wl,-rpath=../../lz4/lz4-install/usr/local/lib -Wl,-rpath=../../brotli/brotli-master/out/installed/lib64
+CCLIB=-lsdsl -ldivsufsort -ldivsufsort64 -lmarisa -llz4 -lbrotlidec-static -lbrotlicommon-static -lbrotlienc-static -Wl,-rpath=../../lib -Wl,-rpath=../../lz4/lz4-install/usr/local/lib -Wl,-rpath=../../brotli/brotli-master/out/installed/lib64
 SOURCES=$(wildcard *.cpp)
 EXECS=$(SOURCES:.cpp=.x)
 
