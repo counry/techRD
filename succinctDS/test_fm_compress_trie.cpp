@@ -12,8 +12,8 @@
 
 #include <time_util.hpp>
 #include <lz4.h>
-//#include <brotli/encode.h>
-//#include <brotli/decode.h>
+#include <brotli/encode.h>
+#include <brotli/decode.h>
 #include <marisa.h>
 
 using namespace sdsl;
@@ -126,8 +126,6 @@ void test_lz4(char* file, string identify = "lz4")
 void test_Brotli(char* file, string identify = "Brotli")
 {
     cout << "start " << identify << "......"  << endl;
-    string index_suffix = ".fm."+ identify + ".index";
-    string index_file   = string(file)+index_suffix;
 
     if (std::ifstream fin{file, std::ios::binary | std::ios::ate}) {
         auto size = fin.tellg()+1;
@@ -138,7 +136,7 @@ void test_Brotli(char* file, string identify = "Brotli")
             cout << "ERROR: File " << file << " read error" << endl;
         }
         const int src_size = str.size();
-        int max_dst_size = LZ4_compressBound(src_size);
+        int max_dst_size = BrotliEncoderMaxCompressedSize(src_size);
         cout << "read str size " << src_size << " lz4 max_dst_size " << max_dst_size << endl;
 
         //compression
@@ -146,22 +144,22 @@ void test_Brotli(char* file, string identify = "Brotli")
         if (compressed_data == NULL) {
             cout << "Failed to allocate memory for *compressed_data." << endl;
         }
-        const int compressed_data_size = LZ4_compress_default(&str[0], compressed_data, src_size, max_dst_size);
-        if (compressed_data_size < 0) {
-            cout << "A negative result from LZ4_compress_default indicates a failure trying to compress the data.  See exit code (echo $?) for value returned." << endl;
+        memset(compressed_data, 0x0, sizeof(compressed_data));
+        BROTLI_BOOL compressed_data_ret = BrotliEncoderCompress(::BROTLI_DEFAULT_QUALITY, ::BROTLI_DEFAULT_WINDOW, ::BROTLI_DEFAULT_MODE,
+                                                            src_size, &str[0], max_dst_size, compressed_data);
+
+        if (compressed_data_ret == ::BROTLI_FALSE) {
+            cout << "A negative result from BrotliEncoderCompress indicates a failure trying to compress the data.  See exit code (echo $?) for value returned." << endl;
+            return;
         }
-        if (compressed_data_size == 0) {
-            cout << "A result of 0 means compression worked, but was stopped because the destination buffer couldn't hold all the information." << endl;
-        }
-        if (compressed_data_size > 0) {
-            cout << "We successfully compressed some data! src_size = " << src_size << " compressed_data_size = " << compressed_data_size << endl;
-        }
+
+        const int compressed_data_size = strlen(compressed_data);
+        cout << "compressed_data size " << compressed_data_size << std::endl;
+
         compressed_data = (char *)realloc(compressed_data, compressed_data_size);
         if (compressed_data == NULL) {
             cout << "Failed to re-alloc memory for compressed_data." << endl;
         }
-
-
 
         //Decompression
         char* const regen_buffer = malloc(src_size);
@@ -170,21 +168,17 @@ void test_Brotli(char* file, string identify = "Brotli")
         }
 
         int decompressed_size = 0;
+        BrotliDecoderResult decompressed_ret;
         Timer timer;
         for(int i = 0; i < EXTRACT_NUMBER; i++) {
-            decompressed_size = LZ4_decompress_safe(compressed_data, regen_buffer, compressed_data_size, src_size);
+            decompressed_ret = BrotliDecoderDecompress(compressed_data_size, compressed_data, src_size, regen_buffer);
+            if (decompressed_ret != BROTLI_DECODER_RESULT_SUCCESS) {
+                cout << "A negative result from BrotliDecoderDecompress indicates a failure trying to decompress the data.  See exit code (echo $?) for value returned." << endl;
+                return;
+            }
         }
         timer.write_text_to_screen(identify);
         free(compressed_data);
-        if (decompressed_size < 0) {
-            cout << "A negative result from LZ4_decompress_safe indicates a failure trying to decompress the data.  See exit code (echo $?) for value returned." << endl;
-        }
-        if (decompressed_size == 0) {
-            cout << "I'm not sure this function can ever return 0.  Documentation in lz4.h doesn't indicate so." << endl;
-        }
-        if (decompressed_size > 0) {
-            cout << "We successfully decompressed some data! decompressed_size " << decompressed_size << endl;
-        }
 
     } else {
         cout << "ERROR: File " << file << " does not exist. Exit." << endl;
@@ -195,7 +189,7 @@ void test_Brotli(char* file, string identify = "Brotli")
 
 void test_lz4_simple()
 {
-    	//compression
+    //compression
 	const char* const src = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.";
 	const int src_size = (int)(strlen(src) + 1);
 	const int max_dst_size = LZ4_compressBound(src_size);
@@ -297,6 +291,9 @@ void test_compress(char *file)
     std::cout << endl;
 
     test_lz4(file);
+    std::cout << endl;
+
+    test_Brotli(file);
     std::cout << endl;
 
 }
@@ -559,8 +556,6 @@ int main(int argc, char** argv)
     " </relation>";
     test_compress(file);
 
-
-    //test_Brotli(argv[1]);
     //test_lz4_simple();
 
     return 0;
