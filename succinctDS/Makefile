@@ -9,7 +9,7 @@ INC_DIR += -I ../../brotli/brotli-master/out/installed/include
 #加-pg参数后性能会下降
 
 #MY_CXX_FLAGS=-g -Wall -w -O0 -ggdb -fsanitize=address -fno-omit-frame-pointer -fsanitize=leak -I ./ -DMUDUO_STD_STRING -pthread -DHAVE_NETINET_IN_H -fpermissive -fvisibility=hidden -fPIC -std=c++11 -march=native -DNDEBUG $(CODE_COVER)
-MY_CXX_FLAGS=-g -Wall -w -O0 -ggdb -I ./ -DMUDUO_STD_STRING -pthread -DHAVE_NETINET_IN_H -fpermissive -fvisibility=hidden -fPIC -std=c++11 -march=native -DNDEBUG $(CODE_COVER)
+MY_CXX_FLAGS=-g -Wall -w -O0 -ggdb -I ./ -DMUDUO_STD_STRING -pthread -DHAVE_NETINET_IN_H -fvisibility=hidden -fPIC -std=c++11 -march=native -DNDEBUG $(CODE_COVER)
 MY_CXX_OPT_FLAGS=-ffast-math -funroll-loops -D__extern_always_inline="extern __always_inline"  -msse4.2
 
 

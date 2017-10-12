@@ -42,7 +42,7 @@ inline void compress_lz4(std::string file, std::string str)
         goto _ERROR_RETURN;
     }
     memset(compressed_data, 0x0, sizeof(max_dst_size));
-    compressed_data_size = LZ4_compress_default(&str[0], compressed_data, src_size, max_dst_size);
+    compressed_data_size = LZ4_compress_default(str.c_str(), compressed_data, src_size, max_dst_size);
     if (compressed_data_size < 0) {
         std::cout << "A negative result from LZ4_compress_default indicates a failure trying to compress the data.  See exit code (echo $?) for value returned." << std::endl;
         goto _ERROR_RETURN;
@@ -111,7 +111,7 @@ inline void compress_Brotli(std::string file, std::string str)
     }
     memset(compressed_data, 0x0, sizeof(max_dst_size));
     compressed_data_ret = BrotliEncoderCompress(BROTLI_DEFAULT_QUALITY, BROTLI_DEFAULT_WINDOW, BROTLI_DEFAULT_MODE,
-                                                        src_size, &str[0], &max_dst_size, compressed_data);
+                                                        src_size, str.c_str(), &max_dst_size, compressed_data);
 
     if (compressed_data_ret == BROTLI_FALSE) {
         std::cout << "A negative result from BrotliEncoderCompress indicates a failure trying to compress the data.  See exit code (echo $?) for value returned." << std::endl;
@@ -137,7 +137,7 @@ inline void compress_Brotli(std::string file, std::string str)
     BrotliDecoderResult decompressed_ret;
     decompressed_ret = BrotliDecoderDecompress(compressed_data_size, compressed_data, &src_size, regen_buffer);
     if (decompressed_ret != BROTLI_DECODER_RESULT_SUCCESS) {
-        std::cout << "A negative result from BrotliDecoderDecompress indicates a failure trying to decompress the data. return " << decompressed_ret << std::endl;
+        std::cout << "A negative result from BrotliDecoderDecompress indicates a failure trying to decompress the data." << std::endl;
         goto _ERROR_RETURN;
     }
     //std::cout << "We successfully decompressed some data! decompressed data size " << src_size << " data: ";
