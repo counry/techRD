@@ -68,12 +68,13 @@ class RedisSearchTest():
 
 def testClientSearchSimple():
     client = Client('admin_index', port=6379)
-
     res = client.search(Query(u"@name:朝阳区").no_content().paging(0, 100))
+    #print "res.total=", res.total
+    #for doc in res.docs:
+    #    print "doc.id=", doc.id
 
 def testClientSearch():
     client = Client('admin_index', port=6379)
-
     res = client.search(Query(u"@name:朝阳区 @parent:中国 北京市").no_content().paging(0, 100))
     #print "res.total=", res.total
     #for doc in res.docs:
@@ -81,7 +82,6 @@ def testClientSearch():
 
 def testClientSearchPrefix():
     client = Client('admin_index', port=6379)
-
     res = client.search(Query(u"@name:朝阳* @parent:中国 北京市").no_content().paging(0, 100))
     #print "res.total=", res.total
     #for doc in res.docs:
@@ -99,7 +99,8 @@ def testClientGetObjectRedisearch():
 def testClientGetObjectRedis():
     docid = "60000"
     r = redis.Redis(connection_pool=redis.ConnectionPool(host='localhost', port=6379))
-    #print r.get(docid)
+    doc_content = r.get(docid) 
+    #print doc_content
 
 if __name__ == '__main__':
     from timeit import Timer
@@ -107,22 +108,25 @@ if __name__ == '__main__':
     res_test.testClient()
     testClientSearch()
     testClientSearchPrefix()
-    testClientGetObjectRedisearch()
-    #testClientGetObjectRedis()
+    #testClientGetObjectRedisearch()
+    testClientGetObjectRedis()
     testClientSearchSimple()
 
-    EXE_NUMBER = 100000
-    REPEAT_NUMBER = 3
+    #EXE_NUMBER = 100000
+    #REPEAT_NUMBER = 3
+    EXE_NUMBER = 1
+    REPEAT_NUMBER = 1
+
     t1 = Timer("testClientSearch()", "from __main__ import testClientSearch")
     t2 = Timer("testClientSearchPrefix()", "from __main__ import testClientSearchPrefix")
-    t3 = Timer("testClientGetObjectRedisearch()", "from __main__ import testClientGetObjectRedisearch")
-    #t4 = Timer("testClientGetObjectRedis()", "from __main__ import testClientGetObjectRedis")
+    #t3 = Timer("testClientGetObjectRedisearch()", "from __main__ import testClientGetObjectRedisearch")
+    t4 = Timer("testClientGetObjectRedis()", "from __main__ import testClientGetObjectRedis")
     t5 = Timer("testClientSearchSimple()", "from __main__ import testClientSearchSimple")
 
     print "search ", t1.timeit(EXE_NUMBER)
     print "prefix_search ", t2.timeit(EXE_NUMBER)
-    print "getdoc ", t3.timeit(EXE_NUMBER)
-    #print "getredis ", t4.timeit(EXE_NUMBER)
+    #print "getdoc ", t3.timeit(EXE_NUMBER)
+    print "getredis ", t4.timeit(EXE_NUMBER)
     print "searchsimple ", t5.timeit(EXE_NUMBER)
 
     print "search ", t1.repeat(REPEAT_NUMBER, EXE_NUMBER)

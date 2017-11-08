@@ -15,7 +15,7 @@ from redisearch import *
 WILL_PLAY_TEXT = os.path.abspath(os.path.dirname(__file__) + 'will_play_text.csv.bz2')
 TITLES_CSV = os.path.abspath(os.path.dirname(__file__) + 'titles.csv')
 ADMIN_GEOJSON_FILE = os.path.abspath(os.path.dirname(__file__) + 'admin.geojson')
-SET_REDIS = False
+SET_REDIS = True
 
 class RedisSearchCreateData():
     def createIndex(self, client, num_docs=100):
@@ -24,10 +24,16 @@ class RedisSearchCreateData():
         # conn.flushdb()
         # client = Client('test', port=conn.port)
         try:
-            client.create_index((TextField('name', weight=5.0, no_stem=True),
+            if SET_REDIS:
+                client.create_index((TextField('name', weight=5.0, no_stem=True),
+                                 TextField('parent', no_stem=True),
+                                 NumericField('admin_id', sortable=True)), no_term_offsets=True)
+            else:
+                client.create_index((TextField('name', weight=5.0, no_stem=True),
                                  TextField('parent', no_stem=True),
                                  NumericField('admin_id', sortable=True),
                                  TextField('body', no_stem=True, no_index=True)), no_term_offsets=True)
+ 
         except Exception, e:
             print Exception, ":", e
             exit(-1)
@@ -75,9 +81,10 @@ class RedisSearchCreateData():
                 d['name'] = admin_name
                 d['parent'] = admin_parent
                 d['admin_id'] = int(admin_id)
-                d['body'] = admin_body_common
                 if SET_REDIS:
                     client.redis.set(key, admin_body_common)
+                else:
+                    d['body'] = admin_body_common
 
                 if len(chapters) % 10000 == 0:
                     print "get chapters size=", len(chapters)
@@ -108,6 +115,7 @@ class RedisSearchCreateData():
             assert isinstance(client, Client)
             print "insert geojson index"
             chapters = {}
+            body_dict = {}
 
             with open(ADMIN_GEOJSON_FILE, 'r') as fp:
                 fp_buf = fp.read()
@@ -129,9 +137,11 @@ class RedisSearchCreateData():
                     d['name'] = admin_name
                     d['parent'] = " ".join(admin_parent)
                     d['admin_id'] = int(admin_id)
-                    d['body'] = admin_body
                     if SET_REDIS:
-                        client.redis.set(key, admin_body)
+                        body_dict[key] = admin_body
+                        #client.redis.set(key, admin_body)
+                    else:
+                        d['body'] = admin_body
 					
                     if len(chapters) % 500 == 0:
                         print "get chapters size=", len(chapters)
@@ -145,12 +155,15 @@ class RedisSearchCreateData():
                 indexer.add_document(key, **doc)
             print "finish add document"
             indexer.commit()
-            print "finish add commit"
+            print "finish add commit and start set redis"
+            self.set_to_redis(body_dict)
+            print "finish set redis"
             return len(chapters)
         except Exception,e:
             print Exception,":",e
             return None
 
+    
     def createIndexCSV(self, client, num_docs=100):
 
         assert isinstance(client, Client)
@@ -220,9 +233,14 @@ class RedisSearchCreateData():
         except Exception,e:
             print Exception,":",e
 
+def set_to_redis(d):
+        r = redis.Redis()
+        for k in d:
+            r.set(k, d[k])
 
 if __name__ == '__main__':
     rc = RedisSearchCreateData()
     rc.testClient()
+    
 
 
