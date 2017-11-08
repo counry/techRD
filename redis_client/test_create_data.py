@@ -65,7 +65,7 @@ class RedisSearchCreateData():
             admin_body_common = "".join(admin_body_list)
 
             for n in range(num_docs):
-                admin_id = admin_id + n
+                admin_id = admin_id + 1
                 admin_name_list = []
                 admin_parent_list = []
                 for al in range(16):
@@ -235,14 +235,26 @@ class RedisSearchCreateData():
             print Exception,":",e
 
 def set_to_redis(d):
-        r = redis.Redis()
-        for k in d:
-            r.set(k, d[k])
+    print "set to redis size ", len(d)
+    NUM = 0
+    r = redis.Redis()
+    for k in d:
+        NUM = NUM + 1
+        r.set(k, d[k])
+        if NUM % 10000 == 0:
+            print "doing set to redis key : ", k, " size ", NUM 
 
 if __name__ == '__main__':
+    if SET_REDIS:
+        print "mode redis"
+    else:
+        print "mode redisearch"
     rc = RedisSearchCreateData()
     rc.testClient()
-    set_to_redis(rc.redis_dict_data)
+    if SET_REDIS:
+        print "start set to redis"
+        set_to_redis(rc.redis_dict_data)
+        print "finish set to redis"
     
 
 

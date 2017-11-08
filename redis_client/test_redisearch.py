@@ -11,6 +11,7 @@ import csv
 
 from redisearch import *
 TEST_MODE = False
+SET_REDIS = True
 
 class RedisSearchTest():
 
@@ -32,9 +33,11 @@ class RedisSearchTest():
         assert isinstance(res, Result)
 
         print "res.total=", res.total
+        print str(res.docs)
         for doc in res.docs:
             print "doc.id=", doc.id
-            print "doc.name=", doc.name
+            if not SET_REDIS:
+                print "doc.name=", doc.name
 
         # test no content
         res = client.search(Query(u"@name:朝阳* @parent:中国 吉林省").no_content().paging(0, 100))
@@ -46,11 +49,12 @@ class RedisSearchTest():
             assert ("admin_id" not in doc.__dict__) == True
             assert ("body" not in doc.__dict__) == True
             # test load_document
-            doc_content = client.load_document(doc.id)
-            if doc_content:
-                print "doc.name=", doc_content.name
-            else:
-                print "no find doc ", doc_content.id
+            if not SET_REDIS:
+                doc_content = client.load_document(doc.id)
+                if doc_content:
+                    print "doc.name=", doc_content.name
+                else:
+                    print "no find doc ", doc_content.id
 
         res = client.search(Query(u"@name:朝阳区 @parent:中国 北京市").no_content().paging(0, 100))
         print "res.total=", res.total
@@ -60,11 +64,12 @@ class RedisSearchTest():
             assert ("parent" not in doc.__dict__) == True
             assert ("admin_id" not in doc.__dict__) == True
             assert ("body" not in doc.__dict__) == True
-            doc_content = client.load_document(doc.id)
-            if doc_content:
-                print "doc.name=", doc_content.name
-            else:
-                print "no find doc ", doc_content.id
+            if not SET_REDIS:
+                doc_content = client.load_document(doc.id)
+                if doc_content:
+                    print "doc.name=", doc_content.name
+                else:
+                    print "no find doc ", doc_content.id
 
 def testClientSearchSimple():
     client = Client('admin_index', port=6379)
@@ -91,12 +96,15 @@ def testClientSearchPrefix():
            print "doc.id=", doc.id
 
 def testClientGetObjectRedisearch():
+    if SET_REDIS:
+        return
     docid = "60000"
     client = Client('admin_index', port=6379)
     doc_content = client.load_document(docid)
     if TEST_MODE:
         if doc_content:
            print "doc.name=", doc_content.name
+           pass
         else:
            print "no find doc ", doc_content.id
 
@@ -109,14 +117,15 @@ def testClientGetObjectRedis():
 
 if __name__ == '__main__':
     from timeit import Timer
-    global TEST_MODE
 
-    #EXE_NUMBER = 100000
-    #REPEAT_NUMBER = 3
+    EXE_NUMBER = 100000
+    REPEAT_NUMBER = 3
+    print "mode time"
 
-    EXE_NUMBER = 1
-    REPEAT_NUMBER = 1
-    TEST_MODE = True
+    if TEST_MODE:   
+        EXE_NUMBER = 1
+        REPEAT_NUMBER = 1
+        print "mode test"
 
     res_test = RedisSearchTest()
     res_test.testClient()
@@ -141,7 +150,7 @@ if __name__ == '__main__':
 
     print "search ", t1.repeat(REPEAT_NUMBER, EXE_NUMBER)
     print "prefix_search ", t2.repeat(REPEAT_NUMBER, EXE_NUMBER)
-    print "getdoc ", t3.repeat(REPEAT_NUMBER, EXE_NUMBER)
-    #print "getredis ", t4.repeat(REPEAT_NUMBER, EXE_NUMBER)
+    #print "getdoc ", t3.repeat(REPEAT_NUMBER, EXE_NUMBER)
+    print "getredis ", t4.repeat(REPEAT_NUMBER, EXE_NUMBER)
     print "searchsimple ", t5.repeat(REPEAT_NUMBER, EXE_NUMBER)
 
