@@ -18,6 +18,9 @@ ADMIN_GEOJSON_FILE = os.path.abspath(os.path.dirname(__file__) + 'admin.geojson'
 SET_REDIS = True
 
 class RedisSearchCreateData():
+    def __init__(self):
+        self.redis_dict_data = {}
+
     def createIndex(self, client, num_docs=100):
         print "insert num_docs=", num_docs
         assert isinstance(client, Client)
@@ -82,7 +85,8 @@ class RedisSearchCreateData():
                 d['parent'] = admin_parent
                 d['admin_id'] = int(admin_id)
                 if SET_REDIS:
-                    client.redis.set(key, admin_body_common)
+                    #client.redis.set(key, admin_body_common)
+                    self.redis_dict_data[key] = admin_body_common
                 else:
                     d['body'] = admin_body_common
 
@@ -115,7 +119,6 @@ class RedisSearchCreateData():
             assert isinstance(client, Client)
             print "insert geojson index"
             chapters = {}
-            body_dict = {}
 
             with open(ADMIN_GEOJSON_FILE, 'r') as fp:
                 fp_buf = fp.read()
@@ -138,7 +141,7 @@ class RedisSearchCreateData():
                     d['parent'] = " ".join(admin_parent)
                     d['admin_id'] = int(admin_id)
                     if SET_REDIS:
-                        body_dict[key] = admin_body
+                        self.redis_dict_data[key] = admin_body
                         #client.redis.set(key, admin_body)
                     else:
                         d['body'] = admin_body
@@ -155,9 +158,7 @@ class RedisSearchCreateData():
                 indexer.add_document(key, **doc)
             print "finish add document"
             indexer.commit()
-            print "finish add commit and start set redis"
-            self.set_to_redis(body_dict)
-            print "finish set redis"
+            print "finish add commit"
             return len(chapters)
         except Exception,e:
             print Exception,":",e
@@ -241,6 +242,7 @@ def set_to_redis(d):
 if __name__ == '__main__':
     rc = RedisSearchCreateData()
     rc.testClient()
+    set_to_redis(rc.redis_dict_data)
     
 
 

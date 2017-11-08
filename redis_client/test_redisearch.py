@@ -10,7 +10,7 @@ import bz2
 import csv
 
 from redisearch import *
-
+TEST_MODE = False
 
 class RedisSearchTest():
 
@@ -69,41 +69,55 @@ class RedisSearchTest():
 def testClientSearchSimple():
     client = Client('admin_index', port=6379)
     res = client.search(Query(u"@name:朝阳区").no_content().paging(0, 100))
-    #print "res.total=", res.total
-    #for doc in res.docs:
-    #    print "doc.id=", doc.id
+    if TEST_MODE:
+        print "res.total=", res.total
+        for doc in res.docs:
+           print "doc.id=", doc.id
 
 def testClientSearch():
     client = Client('admin_index', port=6379)
     res = client.search(Query(u"@name:朝阳区 @parent:中国 北京市").no_content().paging(0, 100))
-    #print "res.total=", res.total
-    #for doc in res.docs:
-    #    print "doc.id=", doc.id
+    if TEST_MODE:
+        print "res.total=", res.total
+        for doc in res.docs:
+           print "doc.id=", doc.id
 
 def testClientSearchPrefix():
     client = Client('admin_index', port=6379)
     res = client.search(Query(u"@name:朝阳* @parent:中国 北京市").no_content().paging(0, 100))
-    #print "res.total=", res.total
-    #for doc in res.docs:
-    #    print "doc.id=", doc.id
+    if TEST_MODE:
+        print "res.total=", res.total
+        for doc in res.docs:
+           print "doc.id=", doc.id
 
 def testClientGetObjectRedisearch():
     docid = "60000"
     client = Client('admin_index', port=6379)
     doc_content = client.load_document(docid)
-    #if doc_content:
-    #    print "doc.name=", doc_content.name
-    #else:
-    #    print "no find doc ", doc_content.id
+    if TEST_MODE:
+        if doc_content:
+           print "doc.name=", doc_content.name
+        else:
+           print "no find doc ", doc_content.id
 
 def testClientGetObjectRedis():
     docid = "60000"
     r = redis.Redis(connection_pool=redis.ConnectionPool(host='localhost', port=6379))
-    doc_content = r.get(docid) 
-    #print doc_content
+    doc_content = r.get(docid)
+    if TEST_MODE:
+        print doc_content
 
 if __name__ == '__main__':
     from timeit import Timer
+    global TEST_MODE
+
+    #EXE_NUMBER = 100000
+    #REPEAT_NUMBER = 3
+
+    EXE_NUMBER = 1
+    REPEAT_NUMBER = 1
+    TEST_MODE = True
+
     res_test = RedisSearchTest()
     res_test.testClient()
     testClientSearch()
@@ -112,10 +126,6 @@ if __name__ == '__main__':
     testClientGetObjectRedis()
     testClientSearchSimple()
 
-    #EXE_NUMBER = 100000
-    #REPEAT_NUMBER = 3
-    EXE_NUMBER = 1
-    REPEAT_NUMBER = 1
 
     t1 = Timer("testClientSearch()", "from __main__ import testClientSearch")
     t2 = Timer("testClientSearchPrefix()", "from __main__ import testClientSearchPrefix")
