@@ -37,10 +37,8 @@
 
 #include <string>
 #include <vector>
+#include <iostream>
 
-#ifdef   __cplusplus
-extern   "C "   {
-#endif
 
 #include "redismodule.h"
 #include <stdio.h>
@@ -645,6 +643,11 @@ int HelloLeftPad_RedisCommand(RedisModuleCtx *ctx, RedisModuleString **argv, int
     RedisModule_ReplyWithStringBuffer(ctx,buf,padlen+strlen);
     return REDISMODULE_OK;
 }
+
+#ifdef   __cplusplus
+extern "C" {
+#endif
+
 
 /* This function must be present on each Redis module. It is used in order to
  * register the commands into the Redis server. */
