@@ -34,11 +34,22 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+
+#include <string>
+#include <vector>
+
+#ifdef   __cplusplus
+extern   "C "   {
+#endif
+
 #include "redismodule.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+
+
+#define RM_API __attribute__ ((visibility("default")))
 
 /* HELLO.SIMPLE is among the simplest commands you can implement.
  * It just returns the currently selected DB id, a functionality which is
@@ -214,6 +225,101 @@ int HelloListSpliceAuto_RedisCommand(RedisModuleCtx *ctx, RedisModuleString **ar
     RedisModule_ReplyWithLongLong(ctx,len);
     return REDISMODULE_OK;
 }
+
+#if 0
+int HelloHSET_RedisCommand(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) {
+    RedisModule_AutoMemory(ctx);
+
+    if (argc != 4) return RedisModule_WrongArity(ctx);
+
+    RedisModuleKey *key = RedisModule_OpenKey(ctx,argv[1], REDISMODULE_READ|REDISMODULE_WRITE);
+
+    int type = RedisModule_KeyType(key);
+    if (type != REDISMODULE_KEYTYPE_HASH && type != REDISMODULE_KEYTYPE_EMPTY)
+    {
+        RedisModule_CloseKey(key);
+        return RedisModule_ReplyWithError(ctx,REDISMODULE_ERRORMSG_WRONGTYPE);
+    }
+
+    RedisModuleCallReply *r = RedisModule_Call(ctx,"HSET","sss",argv[1],argv[2],argv[3]);
+    if (r == NULL) {
+        RedisModule_CloseKey(key);
+        return RedisModule_ReplyWithError(ctx, "ERR reply is NULL");
+    } else if (RedisModule_CallReplyType(r) == REDISMODULE_REPLY_ERROR) {
+        RedisModule_ReplyWithCallReply(ctx, r);
+        RedisModule_CloseKey(key);
+        RedisModule_FreeCallReply(r);
+        return REDISMODULE_ERR;
+    }
+    RedisModule_CloseKey(key);
+    RedisModule_FreeCallReply(r);
+    RedisModule_ReplyWithSimpleString(ctx, "OK");
+    return REDISMODULE_OK;
+}
+
+int HelloHGET_RedisCommand(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) {
+    RedisModule_AutoMemory(ctx);
+
+    if (argc != 3) return RedisModule_WrongArity(ctx);
+
+    RedisModuleKey *key = RedisModule_OpenKey(ctx,argv[1], REDISMODULE_READ|REDISMODULE_WRITE);
+
+    int type = RedisModule_KeyType(key);
+    if (type != REDISMODULE_KEYTYPE_HASH && type != REDISMODULE_KEYTYPE_EMPTY)
+    {
+        RedisModule_CloseKey(key);
+        return RedisModule_ReplyWithError(ctx,REDISMODULE_ERRORMSG_WRONGTYPE);
+    }
+
+    RedisModuleCallReply *r = RedisModule_Call(ctx,"HGET","sss",argv[1],argv[2]);
+    if (r == NULL) {
+        RedisModule_CloseKey(key);
+        return RedisModule_ReplyWithError(ctx, "ERR reply is NULL");
+    } else if (RedisModule_CallReplyType(r) == REDISMODULE_REPLY_ERROR) {
+        RedisModule_ReplyWithCallReply(ctx, r);
+        RedisModule_CloseKey(key);
+        RedisModule_FreeCallReply(r);
+        return REDISMODULE_ERR;
+    }
+
+    RedisModule_CloseKey(key);
+    RedisModule_FreeCallReply(r);
+
+    RedisModule_ReplyWithArray(ctx,count);
+    while(count--) RedisModule_ReplyWithLongLong(ctx,rand());
+
+    return REDISMODULE_OK;
+}
+#endif
+
+
+int HelloHGETSET_RedisCommand(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) {
+    RedisModule_AutoMemory(ctx); /* Use automatic memory management. */
+
+    if (argc != 4) return RedisModule_WrongArity(ctx);
+    RedisModuleKey *key = RedisModule_OpenKey(ctx, argv[1], REDISMODULE_READ | REDISMODULE_WRITE);
+    int type = RedisModule_KeyType(key);
+    if (type != REDISMODULE_KEYTYPE_HASH &&
+        type != REDISMODULE_KEYTYPE_EMPTY) {
+        return RedisModule_ReplyWithError(ctx, REDISMODULE_ERRORMSG_WRONGTYPE);
+    }
+
+    /* Get the old field value. */
+    RedisModuleString *oldval;
+    RedisModule_HashGet(key, REDISMODULE_HASH_NONE, argv[2], &oldval, NULL);
+
+    size_t len;
+    const char *str = RedisModule_StringPtrLen(oldval, &len);
+    std::string tmp(str, len);
+    std::cout << tmp << std::endl;
+
+    if (oldval) {
+        RedisModule_HashSet(key, REDISMODULE_HASH_NONE, argv[3], oldval, NULL);
+    }
+    RedisModule_ReplyWithLongLong(ctx, oldval != NULL);
+    return REDISMODULE_OK;
+}
+
 
 /* HELLO.RAND.ARRAY <count>
  * Shows how to generate arrays as commands replies.
@@ -542,7 +648,7 @@ int HelloLeftPad_RedisCommand(RedisModuleCtx *ctx, RedisModuleString **argv, int
 
 /* This function must be present on each Redis module. It is used in order to
  * register the commands into the Redis server. */
-int RedisModule_OnLoad(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) {
+RM_API int RedisModule_OnLoad(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) {
     if (RedisModule_Init(ctx,"helloworld",1,REDISMODULE_APIVER_1)
         == REDISMODULE_ERR) return REDISMODULE_ERR;
 
@@ -617,5 +723,13 @@ int RedisModule_OnLoad(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) 
         HelloLeftPad_RedisCommand,"",1,1,1) == REDISMODULE_ERR)
         return REDISMODULE_ERR;
 
+    if (RedisModule_CreateCommand(ctx,"hello.hgetset",
+        HelloHGETSET_RedisCommand, "write deny-oom",1,1,1) == REDISMODULE_ERR)
+        return REDISMODULE_ERR;
+
     return REDISMODULE_OK;
 }
+
+#ifdef   __cplusplus
+}
+#endif
